@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     if (strpos($response, "Parent's Email") !== false) {
         // Age is still over 13, attempt to change birthdate
-        $newBirthdate = "1990-01-01"; // Set a birthdate that makes the account under 13
+        $newBirthdate = "2015-08-05"; // Set a birthdate that makes the account under 13
         
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, "https://www.roblox.com/my/account");
