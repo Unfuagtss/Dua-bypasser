@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Link Shorten</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: sans-serif;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, button {
+      padding: 12px;
+      width: 100%;
+      margin: 10px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+    }
+    input {
+      background: #111;
+      color: #fff;
+    }
+    button {
+      background-color: #000;
+      color: #fff;
+      box-shadow: 0 0 15px white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      box-shadow: 0 0 25px white;
+    }
+    .result-link {
+      color: #00aaff;
+      font-weight: bold;
+      font-size: 20px;
+      text-decoration: underline;
+      word-break: break-word;
+      margin-top: 10px;
+    }
+    .success {
+      color: #0f0;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🔗 Shorten Link (Auto-Copy)</h2>
+  <input type="url" id="longUrl" placeholder="Enter full URL (http:// or https://)">
+  <button onclick="shortenUrl()">Shorten & Copy</button>
+
+  <div id="output"></div>
+
+  <script>
+    async function shortenUrl() {
+      const url = document.getElementById("longUrl").value.trim();
+      const output = document.getElementById("output");
+      output.innerHTML = "";
+
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        alert("Please enter a valid full URL including http:// or https://");
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(url)}`);
+        const shortLink = await response.text();
+
+        await navigator.clipboard.writeText(shortLink);
+
+        output.innerHTML = `
+          <p class="success">✅ Link shortened and copied to clipboard!</p>
+          <a class="result-link" href="${shortLink}" target="_blank">${shortLink}</a>
+        `;
+      } catch (err) {
+        output.innerHTML = `<p style="color: red;">❌ Error shortening link or copying it.</p>`;
+        console.error(err);
+      }
+    }
+  </script>
+
+</body>
+</html>
